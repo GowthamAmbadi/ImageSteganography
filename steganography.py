@@ -1,8 +1,40 @@
 """LSB image steganography: hide and reveal text in RGB images."""
 
+import base64
 from PIL import Image
 
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
 DELIMITER = "#####"
+DELIMITER_BYTES = b"#####"
+_SALT = b"stego_salt_v1"
+
+
+def _derive_key(password: str) -> bytes:
+    """Derive a 32-byte key from password for Fernet."""
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=_SALT,
+        iterations=480000,
+    )
+    return base64.urlsafe_b64encode(kdf.derive(password.encode("utf-8")))
+
+
+def _encrypt(plaintext: str, password: str) -> bytes:
+    """Encrypt plaintext with password; returns ciphertext bytes."""
+    key = _derive_key(password)
+    f = Fernet(key)
+    return f.encrypt(plaintext.encode("utf-8"))
+
+
+def _decrypt(ciphertext: bytes, password: str) -> str:
+    """Decrypt ciphertext with password; returns plaintext string."""
+    key = _derive_key(password)
+    f = Fernet(key)
+    return f.decrypt(ciphertext).decode("utf-8")
 
 
 def message_to_binary(data):
@@ -17,10 +49,14 @@ def message_to_binary(data):
         raise TypeError("Unsupported type for binary conversion")
 
 
-def hide_data(image_path, secret_msg, output_path=None):
-    """Hide secret message inside image using LSB. Returns PIL Image if output_path is None, else output_path."""
-    secret_msg += DELIMITER
-    binary_msg = message_to_binary(secret_msg)
+def hide_data(image_path, secret_msg, output_path=None, password=None):
+    """Hide secret message inside image using LSB. If password is set, message is encrypted before hiding. Returns PIL Image if output_path is None, else output_path."""
+    if password:
+        payload = _encrypt(secret_msg, password) + DELIMITER_BYTES
+        binary_msg = message_to_binary(payload)
+    else:
+        secret_msg += DELIMITER
+        binary_msg = message_to_binary(secret_msg)
     data_len = len(binary_msg)
 
     img = Image.open(image_path)
@@ -52,8 +88,8 @@ def hide_data(image_path, secret_msg, output_path=None):
     return img
 
 
-def show_data(image_path):
-    """Decode and retrieve hidden message from stego image."""
+def show_data(image_path, password=None):
+    """Decode and retrieve hidden message from stego image. If password is set, payload is decrypted (must match the password used when encoding)."""
     img = Image.open(image_path)
     binary_data = ""
     for pixel in list(img.getdata()):
@@ -63,9 +99,22 @@ def show_data(image_path):
         binary_data += str(b & 1)
 
     all_bytes = [binary_data[i : i + 8] for i in range(0, len(binary_data), 8)]
-    decoded_data = ""
-    for byte in all_bytes:
-        decoded_data += chr(int(byte, 2))
-        if decoded_data.endswith(DELIMITER):
-            break
-    return decoded_data[: -len(DELIMITER)]
+    payload_bytes = _extract_payload_bytes(all_bytes)
+    if payload_bytes is None:
+        return ""  # delimiter not found
+
+    if password:
+        try:
+            return _decrypt(payload_bytes, password)
+        except Exception:
+            raise ValueError("Decryption failed. Wrong password or image was not encoded with a password.")
+    return payload_bytes.decode("latin-1")
+
+
+def _extract_payload_bytes(byte_list):
+    """From list of 8-bit binary strings, build bytes and return payload before delimiter b'#####'."""
+    raw = bytes(int(b, 2) for b in byte_list)
+    idx = raw.find(DELIMITER_BYTES)
+    if idx == -1:
+        return None
+    return raw[:idx]
