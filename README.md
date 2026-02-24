@@ -40,8 +40,8 @@ Open the URL in your browser. Use **Encode** to hide a message in an image and d
 | **`requirements.txt`** | Python dependencies: **Pillow** (image I/O), **matplotlib** (notebook preview), **streamlit** (web app), **cryptography** (optional password encryption). Install with `pip install -r requirements.txt`. |
 | **`README.md`** | This file: project description, setup, how to run the app and notebook, and file overview. |
 
+<img width="1840" height="944" alt="image" src="https://github.com/user-attachments/assets/497ff3f7-f7af-4433-b824-a7750c604be5" />
 
-<img width="804" height="682" alt="image" src="https://github.com/user-attachments/assets/15a79719-7fce-42aa-8ce0-8987cb39b85e" />
+<img width="1790" height="779" alt="image" src="https://github.com/user-attachments/assets/0d074d59-82e0-4cd0-9a84-5b7f4d5df73b" />
 
-<img width="775" height="519" alt="image" src="https://github.com/user-attachments/assets/84aea1a5-83ae-44d7-9853-72e55d0c44bf" />
 
