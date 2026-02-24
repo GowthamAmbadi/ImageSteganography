@@ -39,3 +39,9 @@ Open the URL in your browser. Use **Encode** to hide a message in an image and d
 | **`ImageSteganography.ipynb`** | Jupyter notebook for a CLI-style workflow. Imports from `steganography.py`, sets a local `dataset_path`, and provides `preview_image()`, `encode_image()`, and `decode_image()` that prompt for paths. The last cell runs a menu loop (1=Encode, 2=Decode, 3=Exit). Use when you prefer terminal prompts over the web UI. |
 | **`requirements.txt`** | Python dependencies: **Pillow** (image I/O), **matplotlib** (notebook preview), **streamlit** (web app), **cryptography** (optional password encryption). Install with `pip install -r requirements.txt`. |
 | **`README.md`** | This file: project description, setup, how to run the app and notebook, and file overview. |
+
+
+<img width="804" height="682" alt="image" src="https://github.com/user-attachments/assets/15a79719-7fce-42aa-8ce0-8987cb39b85e" />
+
+<img width="775" height="519" alt="image" src="https://github.com/user-attachments/assets/84aea1a5-83ae-44d7-9853-72e55d0c44bf" />
+
